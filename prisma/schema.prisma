@@ -1,0 +1,123 @@
+// OpenRaffle data model.
+// SQLite by default so it runs with zero setup. For production, switch the
+// provider to "postgresql" and point DATABASE_URL at your Postgres instance.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Raffle {
+  id                 String    @id @default(cuid())
+  slug               String    @unique
+  title              String
+  subtitle           String?
+  description        String
+  /// JSON array of image URLs
+  images             String    @default("[]")
+  /// JSON array of { label, value } spec rows
+  specs              String    @default("[]")
+  prizeValueCents    Int?
+  cashAlternativeCents Int?
+  ticketPriceCents   Int
+  maxTickets         Int
+  maxPerPerson       Int       @default(100)
+  /// DRAFT | LIVE | CLOSED | DRAWN | CANCELLED
+  status             String    @default("DRAFT")
+  startsAt           DateTime  @default(now())
+  endsAt             DateTime
+  skillQuestion      String?
+  /// JSON array of answer options
+  skillOptions       String    @default("[]")
+  skillAnswer        String?
+  winnerTicketId     String?   @unique
+  winnerTicket       Ticket?   @relation("Winner", fields: [winnerTicketId], references: [id])
+  /// JSON with the draw seed, entry-list hash and timestamp
+  drawProof          String?
+  drawnAt            DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  orders  Order[]
+  tickets Ticket[] @relation("RaffleTickets")
+
+  @@index([status, endsAt])
+}
+
+model Order {
+  id                    String    @id @default(cuid())
+  /// Short human-friendly reference shown on receipts, e.g. OR-7F3K9Q
+  reference             String    @unique
+  raffleId              String
+  raffle                Raffle    @relation(fields: [raffleId], references: [id], onDelete: Cascade)
+  name                  String
+  email                 String
+  phone                 String?
+  quantity              Int
+  amountCents           Int
+  /// PENDING | PAID | FAILED | EXPIRED | REFUNDED | OVERSOLD
+  status                String    @default("PENDING")
+  /// STRIPE | FREE | MANUAL | DEMO
+  source                String    @default("STRIPE")
+  skillAnswer           String?
+  skillCorrect          Boolean   @default(true)
+  stripeSessionId       String?   @unique
+  stripePaymentIntentId String?
+  /// Secret used for the public confirmation page and PDF receipt link
+  accessToken           String    @unique
+  ip                    String?
+  expiresAt             DateTime?
+  paidAt                DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  tickets Ticket[]
+
+  @@index([raffleId, status])
+  @@index([email])
+}
+
+model Ticket {
+  id        String   @id @default(cuid())
+  raffleId  String
+  raffle    Raffle   @relation("RaffleTickets", fields: [raffleId], references: [id], onDelete: Cascade)
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  number    Int
+  createdAt DateTime @default(now())
+
+  wonRaffle Raffle? @relation("Winner")
+
+  @@unique([raffleId, number])
+  @@index([orderId])
+}
+
+/// Stripe event ids we have already processed (webhook idempotency)
+model WebhookEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  actor     String
+  raffleId  String?
+  orderId   String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@index([raffleId])
+}
+
+/// Key/value settings editable from the admin (secrets are stored encrypted)
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,14 @@
+services:
+  openraffle:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/data/openraffle.db
+    volumes:
+      - openraffle-data:/data
+    restart: unless-stopped
+
+volumes:
+  openraffle-data:
