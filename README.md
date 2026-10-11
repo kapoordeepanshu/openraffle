@@ -17,6 +17,11 @@ Launch your own online car competition website with **Stripe payments**, **insta
 
 [**Quick start**](#-quick-start) · [**Features**](#-features) · [**Screenshots**](#-screenshots) · [**How it works**](docs/HOW-IT-WORKS.md) · [**Deploy**](#-deployment) · [**Hire me**](#-need-help-hire-me)
 
+<br />
+
+<img src="docs/screenshots/raffle.png" alt="OpenRaffle raffle page with interactive ticket picker and odds calculator" width="49%" />
+<img src="docs/screenshots/admin-dashboard.png" alt="OpenRaffle admin dashboard with revenue and live raffles" width="49%" />
+
 </div>
 
 ---
@@ -110,6 +115,8 @@ In Great Britain, online raffles are usually run as **prize competitions** or **
 | ![Admin dashboard with revenue and live raffles](docs/screenshots/admin-dashboard.png) | ![Stripe payment settings with automatic webhook setup](docs/screenshots/admin-payments.png) |
 | **Manage entries & draw** | **Winner & draw record** |
 | ![Admin raffle management with entries and free entry form](docs/screenshots/admin-raffle.png) | ![Admin draw result](docs/screenshots/admin-draw.png) |
+| **Entry form with qualifying question** | |
+| ![Ticket entry form with qualifying question and age confirmation](docs/screenshots/entry-form.png) | |
 
 ---
 
